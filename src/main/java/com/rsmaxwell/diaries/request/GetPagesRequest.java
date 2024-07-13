@@ -1,4 +1,4 @@
-package com.rsmaxwell.mqtt.rpc.example.request;
+package com.rsmaxwell.diaries.request;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -18,9 +18,9 @@ import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 import com.rsmaxwell.mqtt.rpc.request.Token;
 
-public class CalculatorRequest {
+public class GetPagesRequest {
 
-	private static final Logger logger = LogManager.getLogger(CalculatorRequest.class);
+	private static final Logger logger = LogManager.getLogger(GetPagesRequest.class);
 
 	static int qos = 0;
 	static volatile boolean keepRunning = true;
@@ -36,18 +36,12 @@ public class CalculatorRequest {
 		Option serverOption = createOption("s", "server", "mqtt server", "URL of MQTT server", false);
 		Option usernameOption = createOption("u", "username", "Username", "Username for the MQTT server", true);
 		Option passwordOption = createOption("p", "password", "Password", "Password for the MQTT server", true);
-		Option operationOption = createOption("o", "operation", "Operation", "Operation ( mul/add/sub/div )", true);
-		Option param1Option = createOption("a", "param1", "Param1", "Parameter 1", true);
-		Option param2Option = createOption("b", "param2", "Param2", "Parameter 2", true);
 
 		// @formatter:off
 		Options options = new Options();
 		options.addOption(serverOption)
 			   .addOption(usernameOption)
-			   .addOption(passwordOption)
-			   .addOption(operationOption)
-			   .addOption(param1Option)
-			   .addOption(param2Option);
+			   .addOption(passwordOption);
 		// @formatter:on
 
 		CommandLineParser commandLineParser = new DefaultParser();
@@ -55,12 +49,6 @@ public class CalculatorRequest {
 		String server = commandLine.hasOption("h") ? commandLine.getOptionValue(serverOption) : "tcp://127.0.0.1:1883";
 		String username = commandLine.getOptionValue(usernameOption);
 		String password = commandLine.getOptionValue(passwordOption);
-		String operation = commandLine.getOptionValue(operationOption);
-		String A = commandLine.getOptionValue(param1Option);
-		String B = commandLine.getOptionValue(param2Option);
-
-		int param1 = Integer.parseInt(A);
-		int param2 = Integer.parseInt(B);
 
 		String clientID = "requester";
 		String requestTopic = "request";
@@ -83,10 +71,7 @@ public class CalculatorRequest {
 		rpc.subscribeToResponseTopic();
 
 		// Make a request
-		Request request = new Request("calculator");
-		request.put("operation", operation);
-		request.put("param1", param1);
-		request.put("param2", param2);
+		Request request = new Request("getPages");
 
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -97,8 +82,8 @@ public class CalculatorRequest {
 
 		// Handle the response
 		if (response.ok()) {
-			int result = response.getInteger("result");
-			logger.info(String.format("result: %d", result));
+			String result = response.getString("result");
+			logger.info(String.format("result: %s", result));
 		} else {
 			logger.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}

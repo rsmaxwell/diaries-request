@@ -1,4 +1,4 @@
-package com.rsmaxwell.mqtt.rpc.example.request;
+package com.rsmaxwell.diaries.request;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;

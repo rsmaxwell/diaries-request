@@ -1,11 +1,11 @@
-package com.rsmaxwell.mqtt.rpc.example.request.buildinfo;
+package com.rsmaxwell.diaries.request.buildinfo;
 
 import com.rsmaxwell.mqtt.rpc.common.buildinfo.AbstractBuildInfo;
 
 public class BuildInfo extends AbstractBuildInfo {
 
 	public BuildInfo() {
-		name = "mqtt-rpc-example-request";
+		name = "diaries-request";
 		version = "$VERSION";
 		buildID = "$BUILD_ID";
 		builddate = "$TIMESTAMP";
