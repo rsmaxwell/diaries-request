@@ -75,9 +75,9 @@ public class CalculatorRequest {
 		RemoteProcedureCall rpc = new RemoteProcedureCall(client, String.format("response/%s", clientID));
 
 		// Connect
-		logger.info(String.format("Connecting to broker: %s as '%s'", server, clientID));
+		logger.debug(String.format("Connecting to broker: %s as '%s'", server, clientID));
 		client.connect(connOpts).waitForCompletion();
-		logger.info(String.format("Client %s connected", clientID));
+		logger.debug(String.format("Client %s connected", clientID));
 
 		// Subscribe to the responseTopic
 		rpc.subscribeToResponseTopic();
@@ -105,7 +105,7 @@ public class CalculatorRequest {
 
 		// Disconnect
 		client.disconnect().waitForCompletion();
-		logger.info(String.format("Client %s disconnected", clientID));
-		logger.info("exiting");
+		logger.debug(String.format("Client %s disconnected", clientID));
+		logger.debug("exiting");
 	}
 }
