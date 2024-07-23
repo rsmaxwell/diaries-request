@@ -23,7 +23,6 @@ public class CalculatorRequest {
 	private static final Logger logger = LogManager.getLogger(CalculatorRequest.class);
 
 	static int qos = 0;
-	static volatile boolean keepRunning = true;
 
 	static private ObjectMapper mapper = new ObjectMapper();
 
@@ -96,7 +95,7 @@ public class CalculatorRequest {
 		Response response = token.waitForResponse();
 
 		// Handle the response
-		if (response.ok()) {
+		if (response.isok()) {
 			int result = response.getInteger("result");
 			logger.info(String.format("result: %d", result));
 		} else {

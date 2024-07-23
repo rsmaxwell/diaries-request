@@ -18,9 +18,9 @@ import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 import com.rsmaxwell.mqtt.rpc.request.Token;
 
-public class GetPagesRequest {
+public class RegisterRequest {
 
-	private static final Logger logger = LogManager.getLogger(GetPagesRequest.class);
+	private static final Logger logger = LogManager.getLogger(RegisterRequest.class);
 
 	static int qos = 0;
 
@@ -70,7 +70,9 @@ public class GetPagesRequest {
 		rpc.subscribeToResponseTopic();
 
 		// Make a request
-		Request request = new Request("getPages");
+		Request request = new Request("register");
+		request.put("username", username);
+		request.put("password", password);
 
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -81,8 +83,7 @@ public class GetPagesRequest {
 
 		// Handle the response
 		if (response.isok()) {
-			String result = response.getString("result");
-			logger.info(String.format("result: %s", result));
+			logger.info(String.format("username '%s' has been registered", username));
 		} else {
 			logger.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}
