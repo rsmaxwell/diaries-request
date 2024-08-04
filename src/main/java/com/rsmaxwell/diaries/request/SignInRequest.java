@@ -20,9 +20,9 @@ import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 
-public class RegisterRequest {
+public class SignInRequest {
 
-	private static final Logger log = LogManager.getLogger(RegisterRequest.class);
+	private static final Logger log = LogManager.getLogger(SignInRequest.class);
 
 	static final int qos = 0;
 	static final String clientID = "requester";
@@ -40,15 +40,11 @@ public class RegisterRequest {
 		// Get the parameters needed to make a request
 		Option usernameOption = createOption("u", "username", "Username", "Username", true);
 		Option passwordOption = createOption("p", "password", "Password", "Password", true);
-		Option firstnameOption = createOption("f", "firstname", "Firstname", "First name", true);
-		Option lastnameOption = createOption("l", "lastname", "Lastname", "Last name", true);
 
 		// @formatter:off
 		Options options = new Options();
 		options.addOption(usernameOption)
-			   .addOption(passwordOption)
-		       .addOption(firstnameOption)
-		       .addOption(lastnameOption);
+			   .addOption(passwordOption);
 		// @formatter:on
 
 		CommandLineParser commandLineParser = new DefaultParser();
@@ -73,11 +69,9 @@ public class RegisterRequest {
 		rpc.subscribeToResponseTopic();
 
 		// Make a request
-		Request request = new Request("register");
+		Request request = new Request("signin");
 		request.put("username", commandLine.getOptionValue("username"));
 		request.put("password", commandLine.getOptionValue("password"));
-		request.put("firstname", commandLine.getOptionValue("firstname"));
-		request.put("lastname", commandLine.getOptionValue("lastname"));
 
 		// Send the request as a JSON string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -85,8 +79,14 @@ public class RegisterRequest {
 
 		// Handle the response
 		if (response.isok()) {
-			Long id = response.getLong("result");
-			log.info(String.format("Person Registered: '%s', id: %d", user.getUsername(), id));
+			log.info(String.format("'%s' is signed-in", user.getUsername()));
+
+			String accessToken = response.getString("accessToken");
+			String refreshToken = response.getString("refreshToken");
+
+			log.info(String.format("accessToken:  %s", accessToken));
+			log.info(String.format("refreshToken: %s", refreshToken));
+
 		} else {
 			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}

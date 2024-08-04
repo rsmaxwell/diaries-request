@@ -32,6 +32,6 @@ for /R %SUBPROJECT_DIR%\runtime %%a in (*.jar) do (
 set CLASSPATH=%CLASSPATH%"
 
 
-java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.RegisterRequest ^
- --username jblog --password 123456 --firstname James --lastname Bloggs 
+java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.SignInRequest ^
+ --username jblog --password 123456
 

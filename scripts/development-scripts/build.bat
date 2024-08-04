@@ -20,11 +20,9 @@ pushd %SUBPROJECT_DIR%\..
 set PROJECT_DIR=%CD%
 popd
 
-pushd %SUBPROJECT_DIR%\build
-set BUILD_DIR=%CD%
-popd
 
-cd %SUBPROJECT_DIR%
+
+cd %PROJECT_DIR%
 
 echo on
 %PROJECT_DIR%\gradlew build
