@@ -13,6 +13,7 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
@@ -20,7 +21,7 @@ import com.rsmaxwell.mqtt.rpc.request.Token;
 
 public class GetPagesRequest {
 
-	private static final Logger logger = LogManager.getLogger(GetPagesRequest.class);
+	private static final Logger log = LogManager.getLogger(GetPagesRequest.class);
 
 	static int qos = 0;
 
@@ -31,6 +32,9 @@ public class GetPagesRequest {
 	}
 
 	public static void main(String[] args) throws Exception {
+
+		State state = State.read();
+		log.info(String.format("state:\n%s", state.toJson()));
 
 		Option serverOption = createOption("s", "server", "mqtt server", "URL of MQTT server", false);
 		Option usernameOption = createOption("u", "username", "Username", "Username for the MQTT server", true);
@@ -62,9 +66,9 @@ public class GetPagesRequest {
 		RemoteProcedureCall rpc = new RemoteProcedureCall(client, String.format("response/%s", clientID));
 
 		// Connect
-		logger.debug(String.format("Connecting to broker: %s as '%s'", server, clientID));
+		log.debug(String.format("Connecting to broker: %s as '%s'", server, clientID));
 		client.connect(connOpts).waitForCompletion();
-		logger.debug(String.format("Client %s connected", clientID));
+		log.debug(String.format("Client %s connected", clientID));
 
 		// Subscribe to the responseTopic
 		rpc.subscribeToResponseTopic();
@@ -82,14 +86,14 @@ public class GetPagesRequest {
 		// Handle the response
 		if (response.isok()) {
 			String result = response.getString("result");
-			logger.info(String.format("result: %s", result));
+			log.info(String.format("result: %s", result));
 		} else {
-			logger.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}
 
 		// Disconnect
 		client.disconnect().waitForCompletion();
-		logger.debug(String.format("Client %s disconnected", clientID));
-		logger.debug("exiting");
+		log.debug(String.format("Client %s disconnected", clientID));
+		log.debug("exiting");
 	}
 }

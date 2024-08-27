@@ -31,7 +31,6 @@ for /R %SUBPROJECT_DIR%\runtime %%a in (*.jar) do (
 )
 set CLASSPATH=%CLASSPATH%"
 
-@echo on
-java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.SignInRequest ^
- --username jblog --password 123456
+
+java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.GetDiariesRequest --username %MQTT_USERNAME% --password %MQTT_PASSWORD%
 

@@ -1,5 +1,7 @@
 package com.rsmaxwell.diaries.request;
 
+import java.util.ArrayList;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -12,16 +14,18 @@ import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rsmaxwell.diaries.request.model.Diary;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 import com.rsmaxwell.mqtt.rpc.request.Token;
 
-public class QuitRequest {
+public class GetDiariesRequest {
 
-	private static final Logger log = LogManager.getLogger(QuitRequest.class);
+	private static final Logger log = LogManager.getLogger(GetDiariesRequest.class);
 
 	static int qos = 0;
 
@@ -74,9 +78,8 @@ public class QuitRequest {
 		rpc.subscribeToResponseTopic();
 
 		// Make a request
-		Request request = new Request("quit");
+		Request request = new Request("getDiaries");
 		request.put("accessToken", state.getAccessToken());
-		request.put("quit", true);
 
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -87,7 +90,16 @@ public class QuitRequest {
 
 		// Handle the response
 		if (response.isok()) {
-			log.info("Responder is Quitting");
+			String result = response.getString("result");
+
+			// @formatter:off
+			TypeReference<ArrayList<Diary>> ref = new TypeReference<ArrayList<Diary>>() {};
+			ArrayList<Diary> diaries = mapper.readValue(result, ref);
+			// @formatter:on
+
+			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(diaries);
+
+			log.info(String.format("List of Diaries:\n%s", json));
 		} else {
 			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}

@@ -19,9 +19,6 @@ pushd %SUBPROJECT_DIR%\..
 set PROJECT_DIR=%CD%
 popd
 
-pushd %SUBPROJECT_DIR%\build
-set BUILD_DIR=%CD%
-popd
 
 
 

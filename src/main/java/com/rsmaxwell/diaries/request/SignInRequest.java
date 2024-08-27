@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
 import com.rsmaxwell.diaries.common.config.User;
+import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
@@ -86,6 +87,9 @@ public class SignInRequest {
 
 			log.info(String.format("accessToken:  %s", accessToken));
 			log.info(String.format("refreshToken: %s", refreshToken));
+
+			State state = new State(accessToken, refreshToken);
+			state.write();
 
 		} else {
 			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
