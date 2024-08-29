@@ -13,6 +13,9 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rsmaxwell.diaries.common.config.Config;
+import com.rsmaxwell.diaries.common.config.MqttConfig;
+import com.rsmaxwell.diaries.common.config.User;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
@@ -23,7 +26,9 @@ public class QuitRequest {
 
 	private static final Logger log = LogManager.getLogger(QuitRequest.class);
 
-	static int qos = 0;
+	static final int qos = 0;
+	static final String clientID = "requester";
+	static final String requestTopic = "request";
 
 	static private ObjectMapper mapper = new ObjectMapper();
 
@@ -36,31 +41,27 @@ public class QuitRequest {
 		State state = State.read();
 		log.info(String.format("state:\n%s", state.toJson()));
 
-		Option serverOption = createOption("s", "server", "mqtt server", "URL of MQTT server", false);
-		Option usernameOption = createOption("u", "username", "Username", "Username for the MQTT server", true);
-		Option passwordOption = createOption("p", "password", "Password", "Password for the MQTT server", true);
+		Option configOption = createOption("c", "config", "Configuration", "Configuration", true);
 
 		// @formatter:off
 		Options options = new Options();
-		options.addOption(serverOption)
-			   .addOption(usernameOption)
-			   .addOption(passwordOption);
+		options.addOption(configOption);
 		// @formatter:on
 
 		CommandLineParser commandLineParser = new DefaultParser();
 		CommandLine commandLine = commandLineParser.parse(options, args);
-		String server = commandLine.hasOption("h") ? commandLine.getOptionValue(serverOption) : "tcp://127.0.0.1:1883";
-		String username = commandLine.getOptionValue(usernameOption);
-		String password = commandLine.getOptionValue(passwordOption);
 
-		String clientID = "requester";
-		String requestTopic = "request";
+		String filename = commandLine.getOptionValue("config");
+		Config config = Config.read(filename);
+		MqttConfig mqtt = config.getMqtt();
+		String server = mqtt.getServer();
+		User user = mqtt.getUser();
 
 		MqttClientPersistence persistence = new MqttDefaultFilePersistence();
 		MqttAsyncClient client = new MqttAsyncClient(server, clientID, persistence);
 		MqttConnectionOptions connOpts = new MqttConnectionOptions();
-		connOpts.setUserName(username);
-		connOpts.setPassword(password.getBytes());
+		connOpts.setUserName(user.getUsername());
+		connOpts.setPassword(user.getPassword().getBytes());
 
 		// Make an RPC instance
 		RemoteProcedureCall rpc = new RemoteProcedureCall(client, String.format("response/%s", clientID));

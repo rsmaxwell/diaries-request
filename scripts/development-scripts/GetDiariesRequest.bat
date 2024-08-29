@@ -32,5 +32,6 @@ for /R %SUBPROJECT_DIR%\runtime %%a in (*.jar) do (
 set CLASSPATH=%CLASSPATH%"
 
 
-java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.GetDiariesRequest --username %MQTT_USERNAME% --password %MQTT_PASSWORD%
+java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.GetDiariesRequest ^
+ --config %USERPROFILE%\.diaries\responder.json
 

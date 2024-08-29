@@ -36,22 +36,23 @@ public class SignInRequest {
 	}
 
 	public static void main(String[] args) throws Exception {
-		log.info("diaries Register Request");
 
-		// Get the parameters needed to make a request
+		Option configOption = createOption("c", "config", "Configuration", "Configuration", true);
 		Option usernameOption = createOption("u", "username", "Username", "Username", true);
 		Option passwordOption = createOption("p", "password", "Password", "Password", true);
 
 		// @formatter:off
 		Options options = new Options();
-		options.addOption(usernameOption)
+		options.addOption(configOption)
+	           .addOption(usernameOption)
 			   .addOption(passwordOption);
 		// @formatter:on
 
 		CommandLineParser commandLineParser = new DefaultParser();
 		CommandLine commandLine = commandLineParser.parse(options, args);
 
-		Config config = Config.read();
+		String filename = commandLine.getOptionValue("config");
+		Config config = Config.read(filename);
 		MqttConfig mqtt = config.getMqtt();
 		String server = mqtt.getServer();
 		User user = mqtt.getUser();

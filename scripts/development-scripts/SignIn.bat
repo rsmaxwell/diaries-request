@@ -33,5 +33,6 @@ set CLASSPATH=%CLASSPATH%"
 
 @echo on
 java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.SignInRequest ^
+ --config %USERPROFILE%\.diaries\responder.json ^
  --username jblog --password 123456
 

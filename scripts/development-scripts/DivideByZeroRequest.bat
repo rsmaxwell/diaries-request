@@ -36,6 +36,6 @@ set CLASSPATH=%CLASSPATH%"
 
 
 java -classpath %CLASSPATH% com.rsmaxwell.diaries.request.CalculatorRequest ^
- --username %MQTT_USERNAME% --password %MQTT_PASSWORD% ^
+ --config %USERPROFILE%\.diaries\responder.json ^
  --operation div --param1 10 --param2 0
 
