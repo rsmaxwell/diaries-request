@@ -23,7 +23,7 @@ import com.rsmaxwell.mqtt.rpc.request.Token;
 
 public class CalculatorRequest {
 
-	private static final Logger logger = LogManager.getLogger(CalculatorRequest.class);
+	private static final Logger log = LogManager.getLogger(CalculatorRequest.class);
 
 	static int qos = 0;
 
@@ -76,9 +76,9 @@ public class CalculatorRequest {
 		RemoteProcedureCall rpc = new RemoteProcedureCall(client, String.format("response/%s", clientID));
 
 		// Connect
-		logger.debug(String.format("Connecting to broker: %s as '%s'", server, clientID));
+		log.debug(String.format("Connecting to broker: %s as '%s'", server, clientID));
 		client.connect(connOpts).waitForCompletion();
-		logger.debug(String.format("Client %s connected", clientID));
+		log.debug(String.format("Client %s connected", clientID));
 
 		// Subscribe to the responseTopic
 		rpc.subscribeToResponseTopic();
@@ -99,14 +99,14 @@ public class CalculatorRequest {
 		// Handle the response
 		if (response.isok()) {
 			int result = response.getInteger("result");
-			logger.info(String.format("result: %d", result));
+			log.info(String.format("result: %d", result));
 		} else {
-			logger.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}
 
 		// Disconnect
 		client.disconnect().waitForCompletion();
-		logger.debug(String.format("Client %s disconnected", clientID));
-		logger.debug("exiting");
+		log.debug(String.format("Client %s disconnected", clientID));
+		log.debug("exiting");
 	}
 }

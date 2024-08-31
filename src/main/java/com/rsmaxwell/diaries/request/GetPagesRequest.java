@@ -1,5 +1,7 @@
 package com.rsmaxwell.diaries.request;
 
+import java.util.ArrayList;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -12,10 +14,12 @@ import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
 import com.rsmaxwell.diaries.common.config.User;
+import com.rsmaxwell.diaries.request.model.Page;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
@@ -42,6 +46,7 @@ public class GetPagesRequest {
 		log.info(String.format("state:\n%s", state.toJson()));
 
 		Option configOption = createOption("c", "config", "Configuration", "Configuration", true);
+		Option diaryOption = createOption("d", "diary", "diary name", "diary name", true);
 
 		// @formatter:off
 		Options options = new Options();
@@ -76,6 +81,7 @@ public class GetPagesRequest {
 
 		// Make a request
 		Request request = new Request("getPages");
+		request.put("diary", "diary-1828-and-1829-and-jan-1830");
 
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -87,7 +93,15 @@ public class GetPagesRequest {
 		// Handle the response
 		if (response.isok()) {
 			String result = response.getString("result");
-			log.info(String.format("result: %s", result));
+
+			// @formatter:off
+			TypeReference<ArrayList<Page>> ref = new TypeReference<ArrayList<Page>>() {};
+			ArrayList<Page> diaries = mapper.readValue(result, ref);
+			// @formatter:on
+
+			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(diaries);
+
+			log.info(String.format("List of Diaries:\n%s", json));
 		} else {
 			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}
