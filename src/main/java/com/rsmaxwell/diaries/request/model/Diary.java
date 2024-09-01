@@ -6,5 +6,5 @@ import lombok.Data;
 public class Diary {
 
 	private Long id;
-	private String path;
+	private String name;
 }
