@@ -1,6 +1,7 @@
 package com.rsmaxwell.diaries.request;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
 import com.rsmaxwell.diaries.common.config.User;
+import com.rsmaxwell.diaries.request.model.Diary;
 import com.rsmaxwell.diaries.request.model.Page;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
@@ -34,6 +36,8 @@ public class GetPagesRequest {
 	static final String clientID = "requester";
 	static final String requestTopic = "request";
 
+	private static State state;
+
 	static private ObjectMapper mapper = new ObjectMapper();
 
 	static Option createOption(String shortName, String longName, String argName, String description, boolean required) {
@@ -42,11 +46,10 @@ public class GetPagesRequest {
 
 	public static void main(String[] args) throws Exception {
 
-		State state = State.read();
+		state = State.read();
 		log.info(String.format("state:\n%s", state.toJson()));
 
 		Option configOption = createOption("c", "config", "Configuration", "Configuration", true);
-		Option diaryOption = createOption("d", "diary", "diary name", "diary name", true);
 
 		// @formatter:off
 		Options options = new Options();
@@ -79,9 +82,71 @@ public class GetPagesRequest {
 		// Subscribe to the responseTopic
 		rpc.subscribeToResponseTopic();
 
+		// *********************************************************************************************
+
+		List<Diary> diaries = getDiaries(rpc);
+		log.info(String.format("Diaries:"));
+		for (Diary diary : diaries) {
+			log.info(String.format("    %s", diary));
+		}
+
+		if (diaries.size() < 1) {
+			throw new Exception("No diaries found");
+		}
+		Diary diary = diaries.get(0);
+
+		List<Page> pages = getPages(rpc, diary);
+
+		log.info(String.format("Pages:"));
+		for (Page page : pages) {
+			log.info(String.format("    %s", page));
+		}
+
+		// *********************************************************************************************
+
+		// Disconnect
+		client.disconnect().waitForCompletion();
+		log.debug(String.format("Client %s disconnected", clientID));
+		log.debug("exiting");
+	}
+
+	private static List<Diary> getDiaries(RemoteProcedureCall rpc) throws Exception {
+
+		List<Diary> diaries = new ArrayList<Diary>();
+
+		// Make a request
+		Request request = new Request("getDiaries");
+		request.put("accessToken", state.getAccessToken());
+
+		// Send the request as a json string
+		byte[] bytes = mapper.writeValueAsBytes(request);
+		Token token = rpc.request(requestTopic, bytes);
+
+		// Wait for the response to arrive
+		Response response = token.waitForResponse();
+
+		// Handle the response
+		if (response.isok()) {
+			String result = response.getString("result");
+
+			// @formatter:off
+			TypeReference<ArrayList<Diary>> ref = new TypeReference<ArrayList<Diary>>() {};
+			diaries = mapper.readValue(result, ref);
+			// @formatter:on
+
+		} else {
+			throw new Exception(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+		}
+
+		return diaries;
+	}
+
+	private static List<Page> getPages(RemoteProcedureCall rpc, Diary diary) throws Exception {
+		List<Page> pages = new ArrayList<Page>();
+
 		// Make a request
 		Request request = new Request("getPages");
-		request.put("diary", "diary-1828-and-1829-and-jan-1830");
+		request.put("diary", diary.getId());
 
 		// Send the request as a json string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -96,19 +161,13 @@ public class GetPagesRequest {
 
 			// @formatter:off
 			TypeReference<ArrayList<Page>> ref = new TypeReference<ArrayList<Page>>() {};
-			ArrayList<Page> diaries = mapper.readValue(result, ref);
+			pages = mapper.readValue(result, ref);
 			// @formatter:on
 
-			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(diaries);
-
-			log.info(String.format("List of Diaries:\n%s", json));
 		} else {
-			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			throw new Exception(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}
 
-		// Disconnect
-		client.disconnect().waitForCompletion();
-		log.debug(String.format("Client %s disconnected", clientID));
-		log.debug("exiting");
+		return pages;
 	}
 }
