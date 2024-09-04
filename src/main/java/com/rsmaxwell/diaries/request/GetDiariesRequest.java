@@ -1,6 +1,8 @@
 package com.rsmaxwell.diaries.request;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,7 +16,6 @@ import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
@@ -78,6 +79,8 @@ public class GetDiariesRequest {
 		// Subscribe to the responseTopic
 		rpc.subscribeToResponseTopic();
 
+		List<Diary> diaries = new ArrayList<Diary>();
+
 		// Make a request
 		Request request = new Request("getDiaries");
 		request.put("accessToken", state.getAccessToken());
@@ -91,12 +94,21 @@ public class GetDiariesRequest {
 
 		// Handle the response
 		if (response.isok()) {
-			String result = response.getString("result");
+			Object result = response.get("result");
+			if (!(result instanceof List<?>)) {
+				throw new Exception(String.format("Unexpected type: %s", result.getClass().getSimpleName()));
+			}
 
-			// @formatter:off
-			TypeReference<ArrayList<Diary>> ref = new TypeReference<ArrayList<Diary>>() {};
-			ArrayList<Diary> diaries = mapper.readValue(result, ref);
-			// @formatter:on
+			ArrayList<?> list = (ArrayList<?>) result;
+			for (Object item : list) {
+
+				if (!(item instanceof Map)) {
+					throw new Exception(String.format("Unexpected type: %s", item.getClass().getSimpleName()));
+				}
+				Map<?, ?> map = (Map<?, ?>) item;
+				Diary d = new Diary(map);
+				diaries.add(d);
+			}
 
 			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(diaries);
 

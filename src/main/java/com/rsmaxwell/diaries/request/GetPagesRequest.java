@@ -2,6 +2,7 @@ package com.rsmaxwell.diaries.request;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,7 +16,6 @@ import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
@@ -127,12 +127,22 @@ public class GetPagesRequest {
 
 		// Handle the response
 		if (response.isok()) {
-			String result = response.getString("result");
 
-			// @formatter:off
-			TypeReference<ArrayList<Diary>> ref = new TypeReference<ArrayList<Diary>>() {};
-			diaries = mapper.readValue(result, ref);
-			// @formatter:on
+			Object result = response.get("result");
+			if (!(result instanceof List<?>)) {
+				throw new Exception(String.format("Unexpected type: %s", result.getClass().getSimpleName()));
+			}
+
+			ArrayList<?> list = (ArrayList<?>) result;
+			for (Object item : list) {
+
+				if (!(item instanceof Map)) {
+					throw new Exception(String.format("Unexpected type: %s", item.getClass().getSimpleName()));
+				}
+				Map<?, ?> map = (Map<?, ?>) item;
+				Diary d = new Diary(map);
+				diaries.add(d);
+			}
 
 		} else {
 			throw new Exception(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
@@ -157,12 +167,21 @@ public class GetPagesRequest {
 
 		// Handle the response
 		if (response.isok()) {
-			String result = response.getString("result");
+			Object result = response.get("result");
+			if (!(result instanceof List<?>)) {
+				throw new Exception(String.format("Unexpected type: %s", result.getClass().getSimpleName()));
+			}
 
-			// @formatter:off
-			TypeReference<ArrayList<Page>> ref = new TypeReference<ArrayList<Page>>() {};
-			pages = mapper.readValue(result, ref);
-			// @formatter:on
+			ArrayList<?> list = (ArrayList<?>) result;
+			for (Object item : list) {
+
+				if (!(item instanceof Map)) {
+					throw new Exception(String.format("Unexpected type: %s", item.getClass().getSimpleName()));
+				}
+				Map<?, ?> map = (Map<?, ?>) item;
+				Page p = new Page(map);
+				pages.add(p);
+			}
 
 		} else {
 			throw new Exception(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
