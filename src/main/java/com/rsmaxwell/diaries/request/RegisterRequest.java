@@ -42,6 +42,9 @@ public class RegisterRequest {
 		Option passwordOption = createOption("p", "password", "Password", "Password", true);
 		Option firstnameOption = createOption("f", "firstname", "Firstname", "First name", true);
 		Option lastnameOption = createOption("l", "lastname", "Lastname", "Last name", true);
+		Option knownasOption = createOption("l", "knownas", "Knownas", "Knownas", true);
+		Option emailOption = createOption("l", "email", "Email", "Email", true);
+		Option phoneOption = createOption("l", "phone", "Phone", "Phone", true);
 
 		// @formatter:off
 		Options options = new Options();
@@ -49,7 +52,10 @@ public class RegisterRequest {
 		       .addOption(usernameOption)
 			   .addOption(passwordOption)
 		       .addOption(firstnameOption)
-		       .addOption(lastnameOption);
+		       .addOption(lastnameOption)
+		       .addOption(knownasOption)
+		       .addOption(emailOption)
+		       .addOption(phoneOption);
 		// @formatter:on
 
 		CommandLineParser commandLineParser = new DefaultParser();
@@ -80,6 +86,9 @@ public class RegisterRequest {
 		request.put("password", commandLine.getOptionValue("password"));
 		request.put("firstname", commandLine.getOptionValue("firstname"));
 		request.put("lastname", commandLine.getOptionValue("lastname"));
+		request.put("knownas", commandLine.getOptionValue("knownas"));
+		request.put("email", commandLine.getOptionValue("email"));
+		request.put("phone", commandLine.getOptionValue("phone"));
 
 		// Send the request as a JSON string
 		byte[] bytes = mapper.writeValueAsBytes(request);
@@ -88,7 +97,7 @@ public class RegisterRequest {
 		// Handle the response
 		if (response.isok()) {
 			Long id = response.getLong("result");
-			log.info(String.format("Person Registered: '%s', id: %d", user.getUsername(), id));
+			log.info(String.format("User Registered: '%s', id: %d", user.getUsername(), id));
 		} else {
 			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
 		}
