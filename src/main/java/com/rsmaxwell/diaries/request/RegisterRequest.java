@@ -18,6 +18,7 @@ import com.rsmaxwell.diaries.common.config.MqttConfig;
 import com.rsmaxwell.diaries.common.config.User;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 
 public class RegisterRequest {
@@ -93,13 +94,14 @@ public class RegisterRequest {
 		// Send the request as a JSON string
 		byte[] bytes = mapper.writeValueAsBytes(request);
 		Response response = rpc.request(requestTopic, bytes).waitForResponse();
+		Status status = response.getStatus();
 
 		// Handle the response
-		if (response.isok()) {
-			Long id = response.getLong("result");
+		if (status.isOk()) {
+			Long id = (Long) response.getPayload();
 			log.info(String.format("User Registered: '%s', id: %d", user.getUsername(), id));
 		} else {
-			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			log.info(String.format("status: %s", status.toString()));
 		}
 
 		// Disconnect

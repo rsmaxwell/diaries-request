@@ -19,6 +19,7 @@ import com.rsmaxwell.diaries.common.config.User;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 import com.rsmaxwell.mqtt.rpc.request.Token;
 
@@ -85,12 +86,13 @@ public class QuitRequest {
 
 		// Wait for the response to arrive
 		Response response = token.waitForResponse();
+		Status status = response.getStatus();
 
 		// Handle the response
-		if (response.isok()) {
+		if (status.isOk()) {
 			log.info("Responder is Quitting");
 		} else {
-			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			log.info(String.format("status: %s", status.toString()));
 		}
 
 		// Disconnect

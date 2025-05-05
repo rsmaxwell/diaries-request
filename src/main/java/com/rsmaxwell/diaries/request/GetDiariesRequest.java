@@ -24,6 +24,7 @@ import com.rsmaxwell.diaries.request.model.Diary;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 import com.rsmaxwell.mqtt.rpc.request.Token;
 
@@ -91,10 +92,11 @@ public class GetDiariesRequest {
 
 		// Wait for the response to arrive
 		Response response = token.waitForResponse();
+		Status status = response.getStatus();
 
 		// Handle the response
-		if (response.isok()) {
-			Object result = response.get("result");
+		if (response.isOk()) {
+			Object result = response.getPayload();
 			if (!(result instanceof List<?>)) {
 				throw new Exception(String.format("Unexpected type: %s", result.getClass().getSimpleName()));
 			}
@@ -114,7 +116,7 @@ public class GetDiariesRequest {
 
 			log.info(String.format("List of Diaries:\n%s", json));
 		} else {
-			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			log.info(String.format("status: %s", status.toString()));
 		}
 
 		// Disconnect

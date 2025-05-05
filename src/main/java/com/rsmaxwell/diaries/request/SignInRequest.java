@@ -12,13 +12,15 @@ import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
 import com.rsmaxwell.diaries.common.config.User;
-import com.rsmaxwell.diaries.request.state.State;
+import com.rsmaxwell.diaries.common.response.SigninResponsePayload;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 
 public class SignInRequest {
@@ -78,27 +80,31 @@ public class SignInRequest {
 		// Send the request as a JSON string
 		byte[] bytes = mapper.writeValueAsBytes(request);
 		Response response = rpc.request(requestTopic, bytes).waitForResponse();
+		Status status = response.getStatus();
 
 		// Handle the response
-		if (response.isok()) {
+		if (!status.isOk()) {
+			log.info(String.format("status %s", status.toString()));
+		} else {
 			log.info(String.format("'%s' is signed-in", user.getUsername()));
 
-			String accessToken = response.getString("accessToken");
-			String refreshToken = response.getString("refreshToken");
+			String json = (String) response.getPayload();
+			SigninResponsePayload payload = null;
+			try {
+				payload = mapper.readValue(json, SigninResponsePayload.class);
+			} catch (JsonMappingException e) {
+				log.info(e.getMessage());
+			}
+
+			String accessToken = payload.getAccessToken();
+			String refreshToken = payload.getRefreshToken();
 
 			log.info(String.format("accessToken:  %s", accessToken));
 			log.info(String.format("refreshToken: %s", refreshToken));
-
-			State state = new State(accessToken, refreshToken);
-			state.write();
-
-		} else {
-			log.info(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			log.info("Success");
 		}
 
 		// Disconnect
 		client.disconnect().waitForCompletion();
-		log.debug(String.format("Client %s disconnected", clientID));
-		log.info("Success");
 	}
 }

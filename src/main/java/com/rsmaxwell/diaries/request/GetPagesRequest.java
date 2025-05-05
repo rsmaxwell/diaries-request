@@ -25,6 +25,7 @@ import com.rsmaxwell.diaries.request.model.Page;
 import com.rsmaxwell.diaries.request.state.State;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.request.RemoteProcedureCall;
 import com.rsmaxwell.mqtt.rpc.request.Token;
 
@@ -124,11 +125,12 @@ public class GetPagesRequest {
 
 		// Wait for the response to arrive
 		Response response = token.waitForResponse();
+		Status status = response.getStatus();
 
 		// Handle the response
-		if (response.isok()) {
+		if (status.isOk()) {
 
-			Object result = response.get("result");
+			Object result = response.getPayload();
 			if (!(result instanceof List<?>)) {
 				throw new Exception(String.format("Unexpected type: %s", result.getClass().getSimpleName()));
 			}
@@ -145,7 +147,7 @@ public class GetPagesRequest {
 			}
 
 		} else {
-			throw new Exception(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			throw new Exception(String.format("status: %s", status.getMessage()));
 		}
 
 		return diaries;
@@ -164,10 +166,11 @@ public class GetPagesRequest {
 
 		// Wait for the response to arrive
 		Response response = token.waitForResponse();
+		Status status = response.getStatus();
 
 		// Handle the response
-		if (response.isok()) {
-			Object result = response.get("result");
+		if (status.isOk()) {
+			Object result = response.getPayload();
 			if (!(result instanceof List<?>)) {
 				throw new Exception(String.format("Unexpected type: %s", result.getClass().getSimpleName()));
 			}
@@ -184,7 +187,7 @@ public class GetPagesRequest {
 			}
 
 		} else {
-			throw new Exception(String.format("error response: code: %d, message: %s", response.getCode(), response.getMessage()));
+			throw new Exception(String.format("status: %s", status.toString()));
 		}
 
 		return pages;
