@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.diaries.common.config.Config;
 import com.rsmaxwell.diaries.common.config.MqttConfig;
 import com.rsmaxwell.diaries.common.config.User;
-import com.rsmaxwell.diaries.common.response.SigninResponsePayload;
+import com.rsmaxwell.diaries.common.response.SigninReply;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Status;
@@ -89,9 +89,9 @@ public class SignInRequest {
 			log.info(String.format("'%s' is signed-in", user.getUsername()));
 
 			String json = (String) response.getPayload();
-			SigninResponsePayload payload = null;
+			SigninReply payload = null;
 			try {
-				payload = mapper.readValue(json, SigninResponsePayload.class);
+				payload = mapper.readValue(json, SigninReply.class);
 			} catch (JsonMappingException e) {
 				log.info(e.getMessage());
 			}
